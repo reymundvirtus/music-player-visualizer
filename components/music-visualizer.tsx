@@ -20,6 +20,8 @@ export default function MusicVisualizer() {
     const [beatDetection, setBeatDetection] = useState(true)
     const [showPlaylist, setShowPlaylist] = useState(false)
     const trackEndedRef = useRef(false)
+    const lastTrackIdRef = useRef<string | null>(null)
+    const isButtonNavigatingRef = useRef(false)
 
     const {
         currentTrack: audioCurrentTrack,
@@ -58,24 +60,39 @@ export default function MusicVisualizer() {
 
     // Sync playlist current track with audio player
     useEffect(() => {
-        if (playlistCurrentTrack && (!audioCurrentTrack || playlistCurrentTrack.id !== audioCurrentTrack.id)) {
+        if (playlistCurrentTrack && playlistCurrentTrack.id !== lastTrackIdRef.current) {
+            console.log("=== TRACK SYNC ===")
             console.log("Loading track:", playlistCurrentTrack.name, "at index:", currentTrackIndex)
+            console.log("Previous track ID:", lastTrackIdRef.current)
+            console.log("New track ID:", playlistCurrentTrack.id)
+            console.log("Is button navigating:", isButtonNavigatingRef.current)
+
+            // Auto-play if there was already a track playing or if this is from navigation
+            // const shouldAutoPlay = isPlaying || lastTrackIdRef.current !== null
             loadTrack(playlistCurrentTrack)
             trackEndedRef.current = false
+            lastTrackIdRef.current = playlistCurrentTrack.id
         }
-    }, [playlistCurrentTrack, audioCurrentTrack, loadTrack, currentTrackIndex])
+    }, [playlistCurrentTrack, loadTrack, currentTrackIndex, isPlaying])
 
     // Auto-advance to next track when current track ends
     useEffect(() => {
         // Track ended if not playing, currentTime is 0, we have a track, duration > 0, and we haven't already handled this end
-        if (!isPlaying && currentTime === 0 && audioCurrentTrack && duration > 0 && !trackEndedRef.current) {
+        if (
+            !isPlaying &&
+            currentTime === 0 &&
+            audioCurrentTrack &&
+            duration > 0 &&
+            !trackEndedRef.current &&
+            !isButtonNavigatingRef.current
+        ) {
             trackEndedRef.current = true
             console.log("Track ended, advancing to next")
 
             if (hasNext) {
                 setTimeout(() => {
                     const next = nextTrack()
-                    console.log("Next track:", next?.name)
+                    console.log("Auto-advance to next track:", next?.name)
                 }, 1000) // Wait for fade to complete
             }
         }
@@ -104,22 +121,53 @@ export default function MusicVisualizer() {
     }
 
     const handlePlayTrack = (trackId: string) => {
+        if (isButtonNavigatingRef.current) return // Prevent rapid clicks
+
+        console.log("=== MANUAL TRACK SELECTION ===")
         console.log("Playing track with ID:", trackId)
         const trackIndex = playlist.findIndex((t) => t.id === trackId)
         console.log("Track index:", trackIndex)
+
+        isButtonNavigatingRef.current = true
         playTrack(trackId)
+
+        setTimeout(() => {
+            isButtonNavigatingRef.current = false
+        }, 1000) // Longer timeout for manual selection
     }
 
     const handleNextTrack = () => {
-        console.log("Next track button clicked")
+        if (isButtonNavigatingRef.current) return // Prevent rapid clicks
+
+        console.log("=== NEXT BUTTON CLICKED ===")
+        console.log("Current index before next:", currentTrackIndex)
+
+        isButtonNavigatingRef.current = true
         const next = nextTrack()
-        console.log("Next track:", next?.name)
+        console.log("Next track result:", next?.name)
+
+        // Clear the flag after track has had time to load
+        setTimeout(() => {
+            isButtonNavigatingRef.current = false
+            console.log("Navigation cooldown cleared")
+        }, 1000)
     }
 
     const handlePreviousTrack = () => {
-        console.log("Previous track button clicked")
+        if (isButtonNavigatingRef.current) return // Prevent rapid clicks
+
+        console.log("=== PREVIOUS BUTTON CLICKED ===")
+        console.log("Current index before previous:", currentTrackIndex)
+
+        isButtonNavigatingRef.current = true
         const prev = previousTrack()
-        console.log("Previous track:", prev?.name)
+        console.log("Previous track result:", prev?.name)
+
+        // Clear the flag after track has had time to load
+        setTimeout(() => {
+            isButtonNavigatingRef.current = false
+            console.log("Navigation cooldown cleared")
+        }, 1000)
     }
 
     const visualizerTypes = [
@@ -165,15 +213,21 @@ export default function MusicVisualizer() {
                 />
 
                 {/* Debug Info */}
-                {process.env.NODE_ENV === "development" && (
-                    <div className="text-xs p-2 bg-gray-800 text-white rounded">
-                        <div>Current Track Index: {currentTrackIndex}</div>
-                        <div>Playlist Length: {playlist.length}</div>
-                        <div>Current Track: {playlistCurrentTrack?.name || "None"}</div>
-                        <div>Audio Track: {audioCurrentTrack?.name || "None"}</div>
-                        <div>Is Fading: {isFading ? "Yes" : "No"}</div>
-                    </div>
-                )}
+                <div className="text-xs p-2 bg-gray-800 text-white rounded">
+                    <div>Current Track Index: {currentTrackIndex}</div>
+                    <div>Playlist Length: {playlist.length}</div>
+                    <div>Current Track: {playlistCurrentTrack?.name || "None"}</div>
+                    <div>Audio Track: {audioCurrentTrack?.name || "None"}</div>
+                    <div>Last Track ID: {lastTrackIdRef.current || "None"}</div>
+                    <div>Is Button Navigating: {isButtonNavigatingRef.current ? "Yes" : "No"}</div>
+                    <div>Is Shuffled: {isShuffled ? "Yes" : "No"}</div>
+                    <div>Repeat Mode: {repeatMode}</div>
+                    <div>Has Previous: {hasPrevious ? "Yes" : "No"}</div>
+                    <div>Has Next: {hasNext ? "Yes" : "No"}</div>
+                    <div>Is Playing: {isPlaying ? "Yes" : "No"}</div>
+                    <div>Is Fading: {isFading ? "Yes" : "No"}</div>
+                    <div>Track IDs Match: {playlistCurrentTrack?.id === audioCurrentTrack?.id ? "Yes" : "No"}</div>
+                </div>
 
                 {/* Visualizer Controls */}
                 <VisualizerControls
