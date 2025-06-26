@@ -213,7 +213,7 @@ export default function MusicVisualizer() {
                 />
 
                 {/* Debug Info */}
-                <div className="text-xs p-2 bg-gray-800 text-white rounded">
+                {/* <div className="text-xs p-2 bg-gray-800 text-white rounded">
                     <div>Current Track Index: {currentTrackIndex}</div>
                     <div>Playlist Length: {playlist.length}</div>
                     <div>Current Track: {playlistCurrentTrack?.name || "None"}</div>
@@ -227,7 +227,7 @@ export default function MusicVisualizer() {
                     <div>Is Playing: {isPlaying ? "Yes" : "No"}</div>
                     <div>Is Fading: {isFading ? "Yes" : "No"}</div>
                     <div>Track IDs Match: {playlistCurrentTrack?.id === audioCurrentTrack?.id ? "Yes" : "No"}</div>
-                </div>
+                </div> */}
 
                 {/* Visualizer Controls */}
                 <VisualizerControls
