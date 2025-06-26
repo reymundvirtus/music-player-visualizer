@@ -2,6 +2,8 @@
 
 A customizable, modern music player with visualizations built using **Next.js** and **shadcn/ui**. Features include theme switching, playlist management, beat detection, and interactive audio visualizers like bars and circular effects.
 
+![Music Visualizer Demo](./public/visualizer-demo.gif)
+
 ## ✨ Features
 
 - 🎵 Upload & play local audio files
