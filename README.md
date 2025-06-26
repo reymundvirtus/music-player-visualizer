@@ -7,7 +7,7 @@ A customizable, modern music player with visualizations built using **Next.js** 
 - 🎵 Upload & play local audio files
 - 📁 Playlist support
 - 🔊 Volume control
-- 🌈 Theme switching (light/dark/custom)
+- 🌈 Theme switching
 - 🎶 Music visualizers (Bars, Circular)
 - 💥 Real-time beat detection
 - ⚙️ Adjustable visualizer sensitivity
@@ -16,7 +16,6 @@ A customizable, modern music player with visualizations built using **Next.js** 
 
 - **Framework**: [Next.js](https://nextjs.org)
 - **UI Components**: [shadcn/ui](https://ui.shadcn.com)
-- **Audio API**: Web Audio API
 - **Styling**: Tailwind CSS
 
 ## 📦 Getting Started
